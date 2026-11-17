@@ -119,7 +119,7 @@ public class SecurityConfig {
                 new CorsConfiguration();
 
         configuration.addAllowedOrigin(
-                "http://localhost:5173"
+                "https://scancars.vercel.app"
         );
 
         configuration.addAllowedMethod("*");
