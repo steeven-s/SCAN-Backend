@@ -11,6 +11,8 @@ public record CarResponse(
     String model,
     Integer manufacturingYear,
     String registrationNumber,
+    String ownerName,
+    String ownerMobileNumber,
     String category,
     String fuelType,
     String transmission,

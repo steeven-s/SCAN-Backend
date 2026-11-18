@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateCarRequest(
@@ -26,6 +27,15 @@ public record CreateCarRequest(
     @NotBlank(message = "Registration number is required")
     @Size(max = 30, message = "Registration number cannot exceed 30 characters")
     String registrationNumber,
+
+    @Size(max = 150, message = "Owner name cannot exceed 150 characters")
+    String ownerName,
+
+    @Pattern(
+        regexp = "^\\+?[0-9]{10,15}$",
+        message = "Enter a valid owner mobile number (10 to 15 digits)"
+    )
+    String ownerMobileNumber,
 
     @NotBlank(message = "Category is required")
     @Size(max = 50)

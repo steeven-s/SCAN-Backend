@@ -2,14 +2,16 @@
 package com.carrental.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.carrental.dto.AdminBookingResponse;
+import com.carrental.dto.AssignBookingRequest;
 import com.carrental.service.BookingService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/bookings")
@@ -25,9 +27,46 @@ public class AdminBookingController {
     @GetMapping
     public ResponseEntity<List<AdminBookingResponse>> getAllBookings() {
 
-        List<AdminBookingResponse> bookings =
-                bookingService.getAllBookings();
+        return ResponseEntity.ok(bookingService.getAllBookings());
+    }
 
-        return ResponseEntity.ok(bookings);
+    // Admin: approve booking
+    @PutMapping("/{bookingId}/approve")
+    public ResponseEntity<Map<String, String>> approveBooking(
+            @PathVariable Long bookingId) {
+
+        bookingService.approveBooking(bookingId);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Booking approved successfully")
+        );
+    }
+
+    // Admin: reject booking
+    @PutMapping("/{bookingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectBooking(
+            @PathVariable Long bookingId) {
+
+        bookingService.rejectBooking(bookingId);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Booking rejected successfully")
+        );
+    }
+
+    // Admin: assign booking to employee
+    @PutMapping("/{bookingId}/assign")
+    public ResponseEntity<Map<String, String>> assignBooking(
+            @PathVariable Long bookingId,
+            @Valid @RequestBody AssignBookingRequest request) {
+
+        bookingService.assignBooking(
+                bookingId,
+                request.assignedTo()
+        );
+
+        return ResponseEntity.ok(
+                Map.of("message", "Booking assigned successfully")
+        );
     }
 }

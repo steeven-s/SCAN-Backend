@@ -1,3 +1,4 @@
+
 package com.carrental.service;
 
 import java.util.List;
@@ -18,4 +19,13 @@ public interface BookingService {
 
     // Admin: retrieve all customer bookings
     List<AdminBookingResponse> getAllBookings();
+
+    // Admin: approve a pending booking
+    void approveBooking(Long bookingId);
+
+    // Admin: reject a pending booking
+    void rejectBooking(Long bookingId);
+
+    // Admin: assign booking to an employee
+    void assignBooking(Long bookingId, String assignedTo);
 }

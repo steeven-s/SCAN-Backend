@@ -36,6 +36,13 @@ public class Car {
     @Column(name = "registration_number", nullable = false, unique = true, length = 30)
     private String registrationNumber;
 
+    // Car owner details - admin only
+    @Column(name = "owner_name", length = 150)
+    private String ownerName;
+
+    @Column(name = "owner_mobile_number", length = 15)
+    private String ownerMobileNumber;
+
     @Column(nullable = false, length = 50)
     private String category;
 
@@ -130,6 +137,22 @@ public class Car {
 
     public void setRegistrationNumber(String registrationNumber) {
         this.registrationNumber = registrationNumber;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public String getOwnerMobileNumber() {
+        return ownerMobileNumber;
+    }
+
+    public void setOwnerMobileNumber(String ownerMobileNumber) {
+        this.ownerMobileNumber = ownerMobileNumber;
     }
 
     public String getCategory() {

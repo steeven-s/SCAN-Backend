@@ -44,6 +44,9 @@ public class Booking {
     @Column(nullable = false, length = 20)
     private BookingStatus status = BookingStatus.PENDING;
 
+    @Column(name = "assigned_to", length = 100)
+    private String assignedTo;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -140,6 +143,14 @@ public class Booking {
 
     public void setStatus(BookingStatus status) {
         this.status = status;
+    }
+
+    public String getAssignedTo() {
+        return assignedTo;
+    }
+
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo;
     }
 
     public LocalDateTime getCreatedAt() {

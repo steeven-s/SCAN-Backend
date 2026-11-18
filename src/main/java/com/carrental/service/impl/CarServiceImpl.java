@@ -102,7 +102,7 @@ public class CarServiceImpl implements CarService {
             );
         }
 
-        // Update car details
+        // Update car details, including owner details
         mapRequestToCar(request, car);
 
         // Preserve the existing availability status
@@ -155,6 +155,10 @@ public class CarServiceImpl implements CarService {
                 normalizeRegistrationNumber(request.registrationNumber())
         );
 
+        // Owner details
+        car.setOwnerName(request.ownerName().trim());
+        car.setOwnerMobileNumber(request.ownerMobileNumber().trim());
+
         car.setCategory(request.category().trim().toUpperCase(Locale.ROOT));
         car.setFuelType(request.fuelType().trim().toUpperCase(Locale.ROOT));
         car.setTransmission(
@@ -170,7 +174,7 @@ public class CarServiceImpl implements CarService {
         );
     }
 
- // MAP PRICING REQUEST TO PRICING ENTITY
+    // MAP PRICING REQUEST TO PRICING ENTITY
     private void mapPricingRequest(
             CarPricingRequest request,
             CarPricing pricing) {
@@ -182,7 +186,7 @@ public class CarServiceImpl implements CarService {
         pricing.setMonthlyPrice(request.monthlyPrice());
     }
 
- // MAP ENTITY TO RESPONSE DTO
+    // MAP ENTITY TO RESPONSE DTO
     private CarResponse mapToResponse(Car car) {
 
         CarPricing pricing = car.getPricing();
@@ -205,6 +209,8 @@ public class CarServiceImpl implements CarService {
                 car.getModel(),
                 car.getManufacturingYear(),
                 car.getRegistrationNumber(),
+                car.getOwnerName(),
+                car.getOwnerMobileNumber(),
                 car.getCategory(),
                 car.getFuelType(),
                 car.getTransmission(),
