@@ -1,3 +1,4 @@
+
 package com.carrental.security;
 
 import java.util.Base64;
@@ -12,7 +13,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
@@ -36,27 +37,18 @@ public class SecurityConfig {
 
     @Bean
     public SecretKey secretKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
 
-        byte[] keyBytes = Base64.getDecoder()
-                .decode(jwtSecret);
-
-        return new SecretKeySpec(
-                keyBytes,
-                "HmacSHA256"
-        );
+        return new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
     @Bean
     public JwtEncoder jwtEncoder(SecretKey secretKey) {
-
-        return new NimbusJwtEncoder(
-                new ImmutableSecret<>(secretKey)
-        );
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey));
     }
 
     @Bean
     public JwtDecoder jwtDecoder(SecretKey secretKey) {
-
         return NimbusJwtDecoder
                 .withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
@@ -64,8 +56,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
         http
             .csrf(csrf -> csrf.disable())
@@ -73,40 +65,46 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
 
             .sessionManagement(session -> session
-                .sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
             .authorizeHttpRequests(auth -> auth
 
-            	    // Public APIs
-            	    .requestMatchers(
-            	        HttpMethod.POST,
-            	        "/api/auth/register",
-            	        "/api/auth/login"
-            	    ).permitAll()
+                // Public authentication APIs
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/auth/register",
+                    "/api/auth/login"
+                ).permitAll()
 
-            	    .requestMatchers(
-            	        HttpMethod.GET,
-            	        "/api/health"
-            	    ).permitAll()
+                // Public health API
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/health"
+                ).permitAll()
 
-            	    // Admin APIs
-            	    .requestMatchers("/api/admin/**")
-            	        .hasRole("ADMIN")
+                // Public car listing for homepage visitors
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/cars"
+                ).permitAll()
 
-            	    // Customer APIs
-            	    .requestMatchers("/api/customer/**")
-            	        .hasRole("CUSTOMER")
+                // Admin APIs
+                .requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
 
-            	    // All other APIs require authentication
-            	    .anyRequest().authenticated()
-            	)
+                // Customer APIs
+                .requestMatchers("/api/customer/**")
+                    .hasRole("CUSTOMER")
 
-            .oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwt ->
-                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                // All remaining APIs require authentication
+                .anyRequest().authenticated()
+            )
+
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                )
             );
 
         return http.build();
@@ -115,13 +113,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.addAllowedOrigin(
-                "https://scancars.vercel.app"
-        );
-
+        configuration.addAllowedOrigin("https://scancars.vercel.app");
+       // configuration.addAllowedOrigin("http://localhost:5173");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
@@ -129,30 +124,25 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
-    
 
-@Bean
-public JwtAuthenticationConverter jwtAuthenticationConverter() {
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
 
-    JwtGrantedAuthoritiesConverter authoritiesConverter =
-            new JwtGrantedAuthoritiesConverter();
+        JwtGrantedAuthoritiesConverter authoritiesConverter =
+                new JwtGrantedAuthoritiesConverter();
 
-    authoritiesConverter.setAuthoritiesClaimName("role");
-    authoritiesConverter.setAuthorityPrefix("ROLE_");
+        authoritiesConverter.setAuthoritiesClaimName("role");
+        authoritiesConverter.setAuthorityPrefix("ROLE_");
 
-    JwtAuthenticationConverter converter =
-            new JwtAuthenticationConverter();
+        JwtAuthenticationConverter converter =
+                new JwtAuthenticationConverter();
 
-    converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
 
-    return converter;
-}
-
+        return converter;
+    }
 }
