@@ -299,33 +299,126 @@ public class BookingServiceImpl implements BookingService {
 
 
 	// Admin: retrieve all customer bookings
-	@Override
-	@Transactional(readOnly = true)
-	public List<AdminBookingResponse> getAllBookings() {
-		return bookingRepository.findAll()
-				.stream()
-				.sorted((b1, b2) ->
-				b2.getCreatedAt().compareTo(b1.getCreatedAt()))
-				.map(booking -> new AdminBookingResponse(
-						booking.getId(),
-						booking.getCustomer().getId(),
-						booking.getCustomer().getFullName(),
-						booking.getCustomer().getPhone(),
-						booking.getCar().getId(),
-						booking.getCar().getBrand(),
-						booking.getCar().getModel(),
-						booking.getCar().getManufacturingYear(),
-						booking.getRentalType(),
-						booking.getPricingType(),
-						booking.getPickupDateTime(),
-						booking.getReturnDateTime(),
-						booking.getUnitPrice(),
-						booking.getTotalAmount(),
-						booking.getStatus(),
-						booking.getCreatedAt()
-						))
-				.toList();
-	}
+
+@Override
+@Transactional(readOnly = true)
+public List<AdminBookingResponse> getAllBookings() {
+
+    return bookingRepository.findAll()
+            .stream()
+            .sorted((b1, b2) ->
+                    b2.getCreatedAt().compareTo(b1.getCreatedAt()))
+            .map(booking -> new AdminBookingResponse(
+                    booking.getId(),
+                    booking.getCustomer().getId(),
+                    booking.getCustomer().getFullName(),
+                    booking.getCustomer().getPhone(),
+                    booking.getCar().getId(),
+                    booking.getCar().getBrand(),
+                    booking.getCar().getModel(),
+                    booking.getCar().getManufacturingYear(),
+                    booking.getCar().getOwnerName(),
+                    booking.getCar().getOwnerMobileNumber(),
+                    booking.getAssignedTo(),
+                    booking.getRentalType(),
+                    booking.getPricingType(),
+                    booking.getPickupDateTime(),
+                    booking.getReturnDateTime(),
+                    booking.getUnitPrice(),
+                    booking.getTotalAmount(),
+                    booking.getStatus(),
+                    booking.getCreatedAt()
+            ))
+            .toList();
+}
+
+
+// Admin: approve a pending booking
+@Override
+@Transactional
+public void approveBooking(Long bookingId) {
+
+    Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Booking not found"
+            ));
+
+    if (booking.getStatus() != BookingStatus.PENDING) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Only pending bookings can be approved"
+        );
+    }
+
+    booking.setStatus(BookingStatus.CONFIRMED);
+
+    bookingRepository.save(booking);
+}
+
+// Admin: reject a pending booking
+@Override
+@Transactional
+public void rejectBooking(Long bookingId) {
+
+    Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Booking not found"
+            ));
+
+    if (booking.getStatus() != BookingStatus.PENDING) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Only pending bookings can be rejected"
+        );
+    }
+
+    booking.setStatus(BookingStatus.CANCELLED);
+
+    bookingRepository.save(booking);
+}
+
+// Admin: assign booking to an employee
+@Override
+@Transactional
+public void assignBooking(Long bookingId, String assignedTo) {
+
+    Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Booking not found"
+            ));
+
+    if (assignedTo == null || assignedTo.isBlank()) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Please select an employee"
+        );
+    }
+
+    String employee = assignedTo.trim();
+
+    List<String> allowedEmployees = List.of(
+            "Naveen",
+            "Charan",
+            "Ashok",
+            "Steeven"
+    );
+
+    if (!allowedEmployees.contains(employee)) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid employee. Allowed employees: Naveen, Charan, Ashok, Steeven"
+        );
+    }
+
+    booking.setAssignedTo(employee);
+
+    bookingRepository.save(booking);
+}
+
+
 
 
 	// Get base price for selected rental type
